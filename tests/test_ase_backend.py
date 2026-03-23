@@ -16,7 +16,7 @@ def test_load_atoms_from_cif(cif_paths):
 
 def test_load_atoms_nonexistent_file():
     """Should raise FileNotFoundError with clear message."""
-    with pytest.raises(FileNotFoundError, match="Cannot read CIF file"):
+    with pytest.raises(FileNotFoundError, match="Cannot read file"):
         _load_atoms("/nonexistent/structure.cif")
 
 

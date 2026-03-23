@@ -42,9 +42,11 @@ def build_supercell(
         raise ValueError(f"defect_fraction must be between 0.0 and 1.0, got {defect_fraction}")
 
     if isinstance(defective, str):
-        defective = read(defective)
+        fmt = "cif" if defective.lower().endswith(".cif") else None
+        defective = read(defective, format=fmt)
     if isinstance(pristine, str):
-        pristine = read(pristine)
+        fmt = "cif" if pristine.lower().endswith(".cif") else None
+        pristine = read(pristine, format=fmt)
 
     _validate_cells(defective, pristine)
 

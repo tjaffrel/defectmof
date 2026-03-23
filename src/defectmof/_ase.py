@@ -10,12 +10,20 @@ from ase.optimize import BFGS, FIRE, LBFGS
 
 
 def _load_atoms(atoms: str | Atoms) -> Atoms:
-    """Load atoms from CIF path or return as-is."""
+    """Load atoms from file path or return as-is.
+
+    Supports CIF, XYZ, POSCAR, and other ASE-readable formats.
+    For .cif files, forces CIF format to avoid misdetection (e.g. CONTCAR*.cif).
+    """
     if isinstance(atoms, str):
         if not os.path.isfile(atoms):
             raise FileNotFoundError(
-                f"Cannot read CIF file: {atoms}. Check the file exists and is a valid CIF."
+                f"Cannot read file: {atoms}. Check the file exists and is valid."
             )
+        # Force CIF format for .cif files to avoid ASE misdetecting
+        # filenames containing "CONTCAR" or "POSCAR" as VASP format
+        if atoms.lower().endswith(".cif"):
+            return read(atoms, format="cif")
         return read(atoms)
     return atoms.copy()
 
