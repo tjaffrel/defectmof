@@ -21,3 +21,14 @@ def test_run_md_invalid_backend(tiny_atoms):
 def test_run_md_invalid_thermostat(tiny_atoms):
     with pytest.raises(ValueError, match="thermostat"):
         run_md(tiny_atoms, thermostat="berendsen")
+
+
+# --- Edge case tests ---
+
+
+def test_run_md_zero_steps(tiny_atoms):
+    """n_steps=0 should return empty list."""
+    with patch("defectmof.md.ase_run_md", return_value=[]):
+        result = run_md(tiny_atoms, n_steps=0, backend="ase")
+        assert isinstance(result, list)
+        assert len(result) == 0
