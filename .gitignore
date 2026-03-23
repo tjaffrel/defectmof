@@ -8,15 +8,8 @@ build/
 outputs/
 .pytest_cache/
 
-# Original scripts (preserved in library code)
-run_4x4x4_new_2_percentages_correct.py
-run_mace_gpu.job
-
-# Root-level CIF files (copies in examples/structures/)
-/CONTCAR_final.cif
-/CONTCAR_optimized.cif
-/struct1_optimized_c_axis.cif
-/struct2_optimized_a_axis.cif
-
-# Design docs (local only)
-docs/
+# Analysis outputs (generated, not tracked)
+analysis/*.traj
+analysis/*.png
+analysis/*.csv
+analysis/*.cif
