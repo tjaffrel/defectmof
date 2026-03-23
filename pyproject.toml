@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "defectmof"
+version = "0.1.0"
+description = "Simple tools for MOF defect supercell generation, optimization, and simulation"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = [
+    "ase>=3.23",
+    "mace-torch>=0.3",
+    "numpy",
+    "matplotlib",
+    "hydra-core>=1.3",
+    "torch>=2.0",
+]
+
+[project.optional-dependencies]
+torchsim = ["torch-sim @ git+https://github.com/TorchSim/torch-sim"]
+pdf = ["diffpy.srreal", "debyecalculator"]
+dev = ["pytest", "ruff"]
+all = ["defectmof[torchsim,pdf,dev]"]
+
+[project.scripts]
+defectmof-build = "defectmof.cli:build"
+defectmof-optimize = "defectmof.cli:optimize"
+defectmof-md = "defectmof.cli:md"
+defectmof-pdf = "defectmof.cli:pdf"
+defectmof-rdf = "defectmof.cli:rdf"
+defectmof-hierarchical = "defectmof.cli:hierarchical"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/defectmof"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
