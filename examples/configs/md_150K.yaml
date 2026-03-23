@@ -1,0 +1,13 @@
+# MD simulation at 150K
+input: optimized.cif
+temperature: 150.0
+n_steps: 5000
+timestep: 1.0
+model: mace_mp_medium
+thermostat: langevin
+friction: 0.01
+log_interval: 10
+equilibration_steps: 1000
+backend: ase
+device: cuda
+trajectory: md_150K.traj

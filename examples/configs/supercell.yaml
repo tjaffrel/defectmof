@@ -1,0 +1,11 @@
+# Supercell building config
+defective: struct1_optimized_c_axis.cif
+pristine: struct2_optimized_a_axis.cif
+size:
+  - 4
+  - 4
+  - 4
+defect_fraction: 0.44
+mode: random
+seed: 42
+output: supercell.cif

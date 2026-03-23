@@ -1,0 +1,9 @@
+# Structure optimization config
+input: structure.cif
+model: mace_mp_medium
+optimizer: lbfgs
+fmax: 0.05
+max_steps: 500
+backend: ase
+device: cuda
+output: optimized.cif
