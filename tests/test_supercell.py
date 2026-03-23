@@ -112,8 +112,8 @@ def test_build_supercell_different_seeds_differ(two_tiny_cells):
 
 
 def test_build_supercell_nonexistent_cif():
-    """Non-existent CIF path should raise an error."""
-    with pytest.raises(Exception):
+    """Non-existent CIF path should raise FileNotFoundError."""
+    with pytest.raises((FileNotFoundError, OSError)):
         build_supercell("/nonexistent/path.cif", "/also/nonexistent.cif", size=(2, 2, 2))
 
 
@@ -136,7 +136,7 @@ def test_build_supercell_pbc_preserved(two_tiny_cells):
 def test_build_supercell_cell_tolerance_boundary():
     """Cells differing by exactly the tolerance should pass."""
     cell_a = Atoms("Al", positions=[[0, 0, 0]], cell=[3.000, 3.0, 3.0], pbc=True)
-    cell_b = Atoms("Al", positions=[[0, 0, 0]], cell=[3.009, 3.0, 3.0], pbc=True)  # within 0.01
+    cell_b = Atoms("Al", positions=[[0, 0, 0]], cell=[3.010, 3.0, 3.0], pbc=True)  # exactly at 0.01 tolerance
     # Should NOT raise
     sc = build_supercell(cell_a, cell_b, size=(2, 2, 2))
     assert isinstance(sc, Atoms)
@@ -148,3 +148,18 @@ def test_build_supercell_cell_just_over_tolerance():
     cell_b = Atoms("Al", positions=[[0, 0, 0]], cell=[3.011, 3.0, 3.0], pbc=True)  # over 0.01
     with pytest.raises(ValueError, match="cell parameters"):
         build_supercell(cell_a, cell_b, size=(2, 2, 2))
+
+
+def test_build_supercell_invalid_fraction():
+    """Defect fraction outside 0-1 should raise."""
+    cell = Atoms("Al", positions=[[0, 0, 0]], cell=[3, 3, 3], pbc=True)
+    with pytest.raises(ValueError, match="defect_fraction"):
+        build_supercell(cell, cell, size=(2, 2, 2), defect_fraction=1.5)
+    with pytest.raises(ValueError, match="defect_fraction"):
+        build_supercell(cell, cell, size=(2, 2, 2), defect_fraction=-0.1)
+
+def test_build_supercell_invalid_size():
+    """Invalid size should raise."""
+    cell = Atoms("Al", positions=[[0, 0, 0]], cell=[3, 3, 3], pbc=True)
+    with pytest.raises(ValueError, match="size"):
+        build_supercell(cell, cell, size=(0, 2, 2))

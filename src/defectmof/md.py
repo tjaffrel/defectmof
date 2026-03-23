@@ -40,6 +40,17 @@ def run_md(
     Returns:
         List of ASE Atoms snapshots from the production phase.
     """
+    if temperature <= 0:
+        raise ValueError(f"temperature must be positive (Kelvin), got {temperature}")
+    if n_steps < 0:
+        raise ValueError(f"n_steps must be >= 0, got {n_steps}")
+    if timestep <= 0:
+        raise ValueError(f"timestep must be positive (fs), got {timestep}")
+    if log_interval < 1:
+        raise ValueError(f"log_interval must be >= 1, got {log_interval}")
+    if equilibration_steps < 0:
+        raise ValueError(f"equilibration_steps must be >= 0, got {equilibration_steps}")
+
     if thermostat not in ("langevin", "nose_hoover"):
         raise ValueError(f"Unknown thermostat '{thermostat}'. Use: 'langevin' or 'nose_hoover'")
 

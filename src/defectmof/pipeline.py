@@ -36,6 +36,9 @@ def hierarchical_optimize(
     Returns:
         Optimized ASE Atoms at target_size.
     """
+    if not 0.0 <= defect_fraction <= 1.0:
+        raise ValueError(f"defect_fraction must be between 0.0 and 1.0, got {defect_fraction}")
+
     for i, dim in enumerate(target_size):
         axis = ["x", "y", "z"][i]
         if dim < 4:

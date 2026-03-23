@@ -34,6 +34,13 @@ def build_supercell(
         ValueError: If cell parameters don't match or invalid mode.
         FileNotFoundError: If CIF file path doesn't exist.
     """
+    if not isinstance(size, (tuple, list)) or len(size) != 3:
+        raise ValueError(f"size must be a tuple of 3 integers, got {size}")
+    if any(s < 1 for s in size):
+        raise ValueError(f"All size dimensions must be >= 1, got {size}")
+    if not 0.0 <= defect_fraction <= 1.0:
+        raise ValueError(f"defect_fraction must be between 0.0 and 1.0, got {defect_fraction}")
+
     if isinstance(defective, str):
         defective = read(defective)
     if isinstance(pristine, str):

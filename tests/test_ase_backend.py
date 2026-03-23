@@ -1,6 +1,5 @@
 """Tests for ASE backend error handling and edge cases."""
 
-import os
 import pytest
 from unittest.mock import patch, MagicMock
 from ase import Atoms

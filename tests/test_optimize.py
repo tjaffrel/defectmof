@@ -48,5 +48,14 @@ def test_optimize_output_creates_parent_dirs_or_fails(tiny_atoms, tmp_path):
     bad_path = str(tmp_path / "nonexistent_dir" / "out.cif")
     mock_result = tiny_atoms.copy()
     with patch("defectmof.optimize.ase_optimize", return_value=mock_result):
-        with pytest.raises(Exception):
+        with pytest.raises((FileNotFoundError, OSError)):
             optimize(tiny_atoms, backend="ase", output=bad_path)
+
+
+def test_optimize_invalid_fmax(tiny_atoms):
+    with pytest.raises(ValueError, match="fmax"):
+        optimize(tiny_atoms, fmax=-1.0)
+
+def test_optimize_invalid_max_steps(tiny_atoms):
+    with pytest.raises(ValueError, match="max_steps"):
+        optimize(tiny_atoms, max_steps=0)

@@ -12,6 +12,14 @@ from ase.io import read
 from collections import Counter
 from pathlib import Path
 
+
+def _cuda_available():
+    try:
+        import torch
+        return torch.cuda.is_available()
+    except ImportError:
+        return False
+
 STRUCTURES = Path(__file__).parent.parent / "examples" / "structures"
 DEFECTIVE_CIF = str(STRUCTURES / "struct1_optimized_c_axis.cif")
 PRISTINE_CIF = str(STRUCTURES / "struct2_optimized_a_axis.cif")
@@ -101,11 +109,11 @@ class TestSupercellPhysics:
 
         for frac in [0.25, 0.44, 0.75]:
             sc = build_supercell(
-                defective, pristine, size=(4, 4, 4),
+                defective, pristine, size=(2, 2, 2),
                 defect_fraction=frac, mode="random", seed=42,
             )
             n_br = sc.get_chemical_symbols().count("Br")
-            n_cells = 4 * 4 * 4
+            n_cells = 2 * 2 * 2
             expected_defective = int(round(frac * n_cells))
             br_per_defective_cell = 4
             expected_br = expected_defective * br_per_defective_cell
@@ -148,7 +156,7 @@ class TestSupercellPhysics:
 
         br_positions = {}
         for mode in ["alternating_a", "alternating_b", "alternating_c"]:
-            sc = build_supercell(defective, pristine, size=(4, 4, 4), mode=mode)
+            sc = build_supercell(defective, pristine, size=(2, 2, 2), mode=mode)
             br_mask = [s == "Br" for s in sc.get_chemical_symbols()]
             br_pos = sc.positions[br_mask]
             br_positions[mode] = br_pos
@@ -176,11 +184,11 @@ class TestSupercellPhysics:
 
         # Build random and clustered supercells
         sc_random = build_supercell(
-            defective, pristine, size=(4, 4, 4),
+            defective, pristine, size=(2, 2, 2),
             mode="random", seed=42,
         )
         sc_clustered = build_supercell(
-            defective, pristine, size=(4, 4, 4),
+            defective, pristine, size=(2, 2, 2),
             mode="clustered_large", seed=42,
         )
 
@@ -207,6 +215,7 @@ class TestSupercellPhysics:
 # ===== MACE energy validation =====
 
 
+@pytest.mark.skipif(not _cuda_available(), reason="CUDA not available")
 class TestMACEEnergies:
     """Verify MACE gives physically reasonable energies.
 

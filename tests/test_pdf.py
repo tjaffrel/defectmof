@@ -29,15 +29,9 @@ def test_compute_rdf_single_snapshot(tiny_atoms):
 
 
 def test_compute_rdf_empty_snapshots():
-    """Empty snapshot list should handle gracefully."""
-    # Should either return empty arrays or raise a clear error
-    try:
-        r, g_r = compute_rdf([], rmax=5.0, nbins=50)
-        # If it returns, arrays should be correct shape
-        assert len(r) == 50
-    except (ValueError, IndexError, ZeroDivisionError) as e:
-        # An informative error is also acceptable
-        pass
+    """Empty snapshot list should raise a clear ValueError."""
+    with pytest.raises(ValueError, match="No snapshots"):
+        compute_rdf([], rmax=5.0, nbins=50)
 
 
 def test_compute_pdf_invalid_engine(tiny_atoms):
@@ -55,6 +49,25 @@ def test_compute_pdf_diffpy_not_installed(tiny_atoms):
     with mock.patch.dict('sys.modules', {'diffpy': None, 'diffpy.srreal': None, 'diffpy.srreal.pdfcalculator': None, 'diffpy.structure': None}):
         with pytest.raises(ImportError, match="diffpy"):
             compute_pdf([tiny_atoms], engine="diffpy")
+
+
+def test_compute_pdf_rmin_ge_rmax(tiny_atoms):
+    from defectmof.pdf import compute_pdf
+    with pytest.raises(ValueError, match="rmin"):
+        compute_pdf([tiny_atoms], rmin=30.0, rmax=10.0)
+
+def test_compute_rdf_invalid_rmax(tiny_atoms):
+    with pytest.raises(ValueError, match="rmax"):
+        compute_rdf([tiny_atoms], rmax=-5.0)
+
+def test_compute_rdf_invalid_nbins(tiny_atoms):
+    with pytest.raises(ValueError, match="nbins"):
+        compute_rdf([tiny_atoms], nbins=0)
+
+def test_compute_pdf_empty_snapshots(tiny_atoms):
+    from defectmof.pdf import compute_pdf
+    with pytest.raises(ValueError, match="No snapshots"):
+        compute_pdf([], engine="diffpy")
 
 
 def test_compute_rdf_very_small_cell():
