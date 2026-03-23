@@ -20,6 +20,7 @@ def run_md(
     memory_limit_gb: float | None = None,
     trajectory: str | None = None,
     head: str | None = None,
+    dispersion: bool = False,
 ) -> list[Atoms]:
     """Run molecular dynamics simulation.
 
@@ -60,7 +61,7 @@ def run_md(
         return ase_run_md(
             atoms, temperature, n_steps, timestep, model, thermostat,
             friction, log_interval, equilibration_steps, device, trajectory,
-            head=head,
+            head=head, dispersion=dispersion,
         )
     elif backend == "torchsim":
         from defectmof._torchsim import torchsim_run_md

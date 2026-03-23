@@ -17,6 +17,7 @@ def optimize(
     memory_limit_gb: float | None = None,
     output: str | None = None,
     head: str | None = None,
+    dispersion: bool = False,
 ) -> Atoms:
     """Optimize a structure using MACE.
 
@@ -44,7 +45,7 @@ def optimize(
         raise ValueError(f"Unknown optimizer '{optimizer}'. Use: 'lbfgs', 'fire', 'bfgs'")
 
     if backend == "ase":
-        result = ase_optimize(atoms, model, optimizer, fmax, max_steps, device, head=head)
+        result = ase_optimize(atoms, model, optimizer, fmax, max_steps, device, head=head, dispersion=dispersion)
     elif backend == "torchsim":
         from defectmof._torchsim import torchsim_optimize
         result = torchsim_optimize(atoms, model, optimizer, fmax, max_steps, device, memory_limit_gb)

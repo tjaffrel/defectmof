@@ -28,14 +28,17 @@ def _load_atoms(atoms: str | Atoms) -> Atoms:
     return atoms.copy()
 
 
-def _get_mace_calculator(model: str, device: str, head: str | None = None):
+def _get_mace_calculator(
+    model: str, device: str, head: str | None = None, dispersion: bool = False,
+):
     """Load a MACE calculator with CUDA fallback to CPU.
 
     Args:
         model: Model name ("mace_mp_small", "mace_mp_medium") or path to .model file.
         device: "cuda" or "cpu".
-        head: For multi-head models, specify which head to use (e.g. "pt_head").
-            If None and model has multiple heads, raises an error with available heads.
+        head: For multi-head models, specify which head to use (e.g. "pt_head", "pbe_d3").
+        dispersion: Add D3(BJ) dispersion correction. Only for MACE-MP0 models
+            (PBE+U level). Do NOT use with head="pbe_d3" — that already includes D3.
     """
     import torch
     from mace.calculators import MACECalculator, mace_mp
@@ -48,13 +51,21 @@ def _get_mace_calculator(model: str, device: str, head: str | None = None):
 
     try:
         if model in model_map:
-            # Standard MACE-MP0 model
-            return mace_mp(model=model_map[model], device=device, default_dtype="float32")
+            # Standard MACE-MP0 model — supports built-in dispersion
+            return mace_mp(
+                model=model_map[model], device=device,
+                default_dtype="float32", dispersion=dispersion,
+            )
         else:
             # Custom model file — use MACECalculator directly
             kwargs = dict(model_paths=model, device=device, default_dtype="float32")
             if head is not None:
                 kwargs["head"] = head
+            if dispersion and head != "pbe_d3":
+                warnings.warn(
+                    "dispersion=True with custom models is not supported. "
+                    "Use head='pbe_d3' for built-in D3 dispersion instead."
+                )
             return MACECalculator(**kwargs)
     except Exception as e:
         if "urlopen" in str(e).lower() or "connection" in str(e).lower():
@@ -74,12 +85,13 @@ def ase_optimize(
     device: str,
     logfile: str | None = None,
     head: str | None = None,
+    dispersion: bool = False,
 ) -> Atoms:
     """Run geometry optimization using ASE."""
     import torch
 
     atoms = _load_atoms(atoms)
-    atoms.calc = _get_mace_calculator(model, device, head=head)
+    atoms.calc = _get_mace_calculator(model, device, head=head, dispersion=dispersion)
 
     opt_map = {"lbfgs": LBFGS, "fire": FIRE, "bfgs": BFGS}
     if optimizer not in opt_map:
@@ -119,6 +131,7 @@ def ase_run_md(
     device: str,
     trajectory: str | None,
     head: str | None = None,
+    dispersion: bool = False,
 ) -> list[Atoms]:
     """Run MD simulation using ASE."""
     import torch
@@ -126,7 +139,7 @@ def ase_run_md(
     from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 
     atoms = _load_atoms(atoms)
-    atoms.calc = _get_mace_calculator(model, device, head=head)
+    atoms.calc = _get_mace_calculator(model, device, head=head, dispersion=dispersion)
 
     MaxwellBoltzmannDistribution(atoms, temperature_K=temperature)
 
