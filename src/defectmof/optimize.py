@@ -16,12 +16,13 @@ def optimize(
     device: str = "cuda",
     memory_limit_gb: float | None = None,
     output: str | None = None,
+    head: str | None = None,
 ) -> Atoms:
     """Optimize a structure using MACE.
 
     Args:
         atoms: Path to CIF file or ASE Atoms object.
-        model: MACE model name ("mace_mp_small", "mace_mp_medium") or path.
+        model: MACE model name ("mace_mp_small", "mace_mp_medium") or path to .model file.
         optimizer: Optimization algorithm ("lbfgs", "fire", "bfgs").
         fmax: Force convergence criterion in eV/A.
         max_steps: Maximum optimization steps.
@@ -29,6 +30,7 @@ def optimize(
         device: Compute device ("cuda" or "cpu").
         memory_limit_gb: Max GPU memory for torchsim backend.
         output: If set, save optimized structure to this CIF path.
+        head: For multi-head MACE models, which head to use (e.g. "pt_head").
 
     Returns:
         Optimized ASE Atoms object.
@@ -42,7 +44,7 @@ def optimize(
         raise ValueError(f"Unknown optimizer '{optimizer}'. Use: 'lbfgs', 'fire', 'bfgs'")
 
     if backend == "ase":
-        result = ase_optimize(atoms, model, optimizer, fmax, max_steps, device)
+        result = ase_optimize(atoms, model, optimizer, fmax, max_steps, device, head=head)
     elif backend == "torchsim":
         from defectmof._torchsim import torchsim_optimize
         result = torchsim_optimize(atoms, model, optimizer, fmax, max_steps, device, memory_limit_gb)

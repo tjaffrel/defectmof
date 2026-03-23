@@ -62,20 +62,26 @@ def compute_pdf(
 def _pdf_diffpy(
     frames: list[Atoms], rmin: float, rmax: float, rstep: float, scattering: str,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Compute PDF using diffpy-CMI."""
+    """Compute PDF using diffpy-CMI.
+
+    Uses DebyePDFCalculator which works correctly for P1 structures
+    (common in DFT-optimized MOFs). PDFCalculator can give incorrect
+    results for low-symmetry structures.
+    """
     try:
-        from diffpy.srreal.pdfcalculator import PDFCalculator
+        from diffpy.srreal.pdfcalculator import DebyePDFCalculator
         from diffpy.structure import loadStructure
     except ImportError:
         raise ImportError(
-            "diffpy is not installed. Install with: pip install diffpy.srreal"
+            "diffpy is not installed. Install with: conda install -c conda-forge diffpy.cmi"
         )
 
-    calc = PDFCalculator()
+    calc = DebyePDFCalculator()
     calc.rmin = rmin
     calc.rmax = rmax
     calc.rstep = rstep
-    calc.setScatteringType("X" if scattering == "xray" else "N")
+    calc.qmax = 25.0  # Typical experimental qmax for synchrotron PDF
+    calc.setScatteringFactorTableByType("X" if scattering == "xray" else "N")
 
     all_gr = []
     for atoms in frames:

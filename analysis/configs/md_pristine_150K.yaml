@@ -1,0 +1,13 @@
+# MD simulation at 150K — Pristine MOF-303
+input: examples/structures/CONTCAR_optimized.cif
+temperature: 150.0
+n_steps: 2000
+timestep: 1.0
+model: mace_mp_small
+thermostat: langevin
+friction: 0.01
+log_interval: 10
+equilibration_steps: 500
+backend: ase
+device: cuda
+trajectory: analysis/md_150K_pristine_mace_small.traj

@@ -6,9 +6,12 @@ channels = ["conda-forge", "pytorch"]
 platforms = ["linux-64"]
 
 [dependencies]
-python = ">=3.11"
+python = ">=3.11,<3.14"
+"diffpy.cmi" = "*"
+setuptools = "<75"
 
 [pypi-dependencies]
 defectmof = { path = ".", editable = true }
 pytest = "*"
 ruff = "*"
+debyecalculator = "*"

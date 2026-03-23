@@ -19,6 +19,7 @@ def run_md(
     device: str = "cuda",
     memory_limit_gb: float | None = None,
     trajectory: str | None = None,
+    head: str | None = None,
 ) -> list[Atoms]:
     """Run molecular dynamics simulation.
 
@@ -27,7 +28,7 @@ def run_md(
         temperature: Simulation temperature in Kelvin.
         n_steps: Number of production MD steps.
         timestep: Timestep in femtoseconds.
-        model: MACE model name or path.
+        model: MACE model name or path to .model file.
         thermostat: "langevin" or "nose_hoover".
         friction: Langevin friction coefficient (1/fs). Ignored for nose_hoover.
         log_interval: Save a snapshot every N steps.
@@ -36,6 +37,7 @@ def run_md(
         device: "cuda" or "cpu".
         memory_limit_gb: Max GPU memory for torchsim.
         trajectory: Path to save trajectory file.
+        head: For multi-head MACE models, which head to use (e.g. "pt_head").
 
     Returns:
         List of ASE Atoms snapshots from the production phase.
@@ -58,6 +60,7 @@ def run_md(
         return ase_run_md(
             atoms, temperature, n_steps, timestep, model, thermostat,
             friction, log_interval, equilibration_steps, device, trajectory,
+            head=head,
         )
     elif backend == "torchsim":
         from defectmof._torchsim import torchsim_run_md

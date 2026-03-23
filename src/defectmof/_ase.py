@@ -28,24 +28,38 @@ def _load_atoms(atoms: str | Atoms) -> Atoms:
     return atoms.copy()
 
 
-def _get_mace_calculator(model: str, device: str):
-    """Load a MACE calculator with CUDA fallback to CPU."""
+def _get_mace_calculator(model: str, device: str, head: str | None = None):
+    """Load a MACE calculator with CUDA fallback to CPU.
+
+    Args:
+        model: Model name ("mace_mp_small", "mace_mp_medium") or path to .model file.
+        device: "cuda" or "cpu".
+        head: For multi-head models, specify which head to use (e.g. "pt_head").
+            If None and model has multiple heads, raises an error with available heads.
+    """
     import torch
-    from mace.calculators import mace_mp
+    from mace.calculators import MACECalculator, mace_mp
 
     if device == "cuda" and not torch.cuda.is_available():
         warnings.warn("CUDA not available, falling back to CPU. This will be slower.")
         device = "cpu"
 
     model_map = {"mace_mp_small": "small", "mace_mp_medium": "medium"}
-    model_name = model_map.get(model, model)
 
     try:
-        return mace_mp(model=model_name, device=device, default_dtype="float32")
+        if model in model_map:
+            # Standard MACE-MP0 model
+            return mace_mp(model=model_map[model], device=device, default_dtype="float32")
+        else:
+            # Custom model file — use MACECalculator directly
+            kwargs = dict(model_paths=model, device=device, default_dtype="float32")
+            if head is not None:
+                kwargs["head"] = head
+            return MACECalculator(**kwargs)
     except Exception as e:
         if "urlopen" in str(e).lower() or "connection" in str(e).lower():
             raise ConnectionError(
-                f"Cannot download MACE model '{model_name}'. "
+                f"Cannot download MACE model '{model}'. "
                 "Check your internet connection or provide a local model path."
             ) from e
         raise
@@ -59,12 +73,13 @@ def ase_optimize(
     max_steps: int,
     device: str,
     logfile: str | None = None,
+    head: str | None = None,
 ) -> Atoms:
     """Run geometry optimization using ASE."""
     import torch
 
     atoms = _load_atoms(atoms)
-    atoms.calc = _get_mace_calculator(model, device)
+    atoms.calc = _get_mace_calculator(model, device, head=head)
 
     opt_map = {"lbfgs": LBFGS, "fire": FIRE, "bfgs": BFGS}
     if optimizer not in opt_map:
@@ -103,6 +118,7 @@ def ase_run_md(
     equilibration_steps: int,
     device: str,
     trajectory: str | None,
+    head: str | None = None,
 ) -> list[Atoms]:
     """Run MD simulation using ASE."""
     import torch
@@ -110,7 +126,7 @@ def ase_run_md(
     from ase.md.velocitydistribution import MaxwellBoltzmannDistribution
 
     atoms = _load_atoms(atoms)
-    atoms.calc = _get_mace_calculator(model, device)
+    atoms.calc = _get_mace_calculator(model, device, head=head)
 
     MaxwellBoltzmannDistribution(atoms, temperature_K=temperature)
 
