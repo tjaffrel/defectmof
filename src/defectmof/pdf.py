@@ -41,6 +41,15 @@ def compute_pdf(
         (r, G_r): Distances and frame-averaged PDF.
     """
     frames = _load_snapshots(snapshots)
+    if len(frames) == 0:
+        raise ValueError("No snapshots provided. Pass at least one Atoms object.")
+
+    if rmin >= rmax:
+        raise ValueError(f"rmin ({rmin}) must be less than rmax ({rmax})")
+    if rstep <= 0:
+        raise ValueError(f"rstep must be positive, got {rstep}")
+    if scattering not in ("xray", "neutron"):
+        raise ValueError(f"scattering must be 'xray' or 'neutron', got '{scattering}'")
 
     if engine == "diffpy":
         return _pdf_diffpy(frames, rmin, rmax, rstep, scattering)
@@ -141,6 +150,13 @@ def compute_rdf(
     from ase.geometry.rdf import get_rdf
 
     frames = _load_snapshots(snapshots)
+    if len(frames) == 0:
+        raise ValueError("No snapshots provided. Pass at least one Atoms object.")
+
+    if rmax <= 0:
+        raise ValueError(f"rmax must be positive, got {rmax}")
+    if nbins < 1:
+        raise ValueError(f"nbins must be >= 1, got {nbins}")
 
     all_rdf = []
     for atoms in frames:

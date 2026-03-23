@@ -33,6 +33,11 @@ def optimize(
     Returns:
         Optimized ASE Atoms object.
     """
+    if fmax <= 0:
+        raise ValueError(f"fmax must be positive, got {fmax}")
+    if max_steps < 1:
+        raise ValueError(f"max_steps must be >= 1, got {max_steps}")
+
     if optimizer not in ("lbfgs", "fire", "bfgs"):
         raise ValueError(f"Unknown optimizer '{optimizer}'. Use: 'lbfgs', 'fire', 'bfgs'")
 
